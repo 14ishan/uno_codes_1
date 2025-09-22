@@ -1,0 +1,44 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Agar scanner se 0x3F mile to 0x3F likho
+
+int pulsePin = A0;
+int signal;
+int threshold = 550;
+unsigned long lastBeatTime = 0;
+int beats = 0;
+int bpm = 0;
+
+void setup() {
+  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0,0);
+  lcd.print("Heartbeat Sensor");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  signal = analogRead(pulsePin);
+
+  if (signal > threshold) {
+    if (millis() - lastBeatTime > 300) { 
+      beats++;
+      lastBeatTime = millis();
+    }
+  }
+
+  if (millis() % 10000 < 50) { // Har 10 sec me BPM calculate
+    bpm = beats * 6;  
+    beats = 0;
+
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Heart Rate:");
+    lcd.setCursor(0,1);
+    lcd.print(bpm);
+    lcd.print(" BPM");
+  }
+}
